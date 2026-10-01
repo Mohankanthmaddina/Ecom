@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug MegaMartApplication",
+            "request": "launch",
+            "mainClass": "com.example.buildpro.MegaMartApplication",
+            "projectName": "MegaMartApplication"
+        }
+    ]
+}

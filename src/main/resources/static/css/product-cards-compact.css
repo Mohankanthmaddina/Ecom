@@ -1,0 +1,211 @@
+/**
+ * Product Cards Compact CSS
+ * ONLY reduces product card/box sizes on mobile
+ * Everything else (headers, navigation, filters) stays original size
+ */
+
+/* ========================================
+   MOBILE DEVICES - ONLY PRODUCT CARDS
+======================================== */
+
+@media (max-width: 768px) {
+    
+    /* ========================================
+       PRODUCT CARDS/BOXES ONLY
+    ======================================== */
+    
+    /* Product Grid - More columns on mobile */
+    .grid-cols-1,
+    .grid-cols-2,
+    .grid-cols-3,
+    .grid-cols-4 {
+        gap: 0.5rem !important; /* Reduce gap between cards */
+    }
+    
+    /* Product Card Container */
+    .product-card {
+        padding: 0.5rem !important; /* Reduce padding inside card */
+        margin-bottom: 0.5rem !important; /* Reduce space between cards */
+        border-radius: 12px !important; /* Slightly smaller rounded corners */
+    }
+    
+    /* Product Image */
+    .product-card img,
+    .product-image {
+        max-height: 120px !important; /* Smaller product images */
+        object-fit: contain;
+    }
+    
+    /* Product Title/Name in Cards */
+    .product-card h2,
+    .product-card h3,
+    .product-card .text-2xl,
+    .product-card .text-xl {
+        font-size: 0.9rem !important; /* Smaller product names */
+        line-height: 1.2 !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    /* Product Brand/Category in Cards */
+    .product-card .text-sm {
+        font-size: 0.7rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+    
+    /* Product Price */
+    .product-card .text-3xl,
+    .product-card .price {
+        font-size: 1.1rem !important; /* Smaller but still visible price */
+        font-weight: 600 !important;
+    }
+    
+    /* Product Description in Cards */
+    .product-card p {
+        font-size: 0.7rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    /* Buttons in Product Cards */
+    .product-card button,
+    .product-card .btn {
+        font-size: 0.75rem !important; /* Smaller button text */
+        padding: 0.4rem 0.8rem !important; /* Compact padding */
+        margin: 0.2rem !important;
+        min-height: 32px !important; /* Touch-friendly but smaller */
+    }
+    
+    /* Icons in Product Cards */
+    .product-card i,
+    .product-card .fas,
+    .product-card .far {
+        font-size: 0.75rem !important;
+    }
+    
+    /* Stock Badge */
+    .product-card .badge,
+    .product-card .stock-badge {
+        font-size: 0.65rem !important;
+        padding: 0.15rem 0.4rem !important;
+    }
+    
+    /* Product Card Hover Effects - Keep them smooth */
+    .product-card {
+        transition: all 0.3s ease !important;
+    }
+    
+    /* ========================================
+       GRID LAYOUT OPTIMIZATION
+    ======================================== */
+    
+    /* Show 2 products per row on mobile */
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    /* Very small screens - still 2 columns but more compact */
+    @media (max-width: 400px) {
+        .product-card {
+            padding: 0.4rem !important;
+        }
+        
+        .product-card img {
+            max-height: 100px !important;
+        }
+        
+        .product-card h2,
+        .product-card h3 {
+            font-size: 0.8rem !important;
+        }
+        
+        .product-card button {
+            font-size: 0.7rem !important;
+            padding: 0.3rem 0.6rem !important;
+        }
+    }
+}
+
+/* ========================================
+   TABLET OPTIMIZATION (481px - 768px)
+======================================== */
+
+@media (min-width: 481px) and (max-width: 768px) {
+    
+    /* 2 or 3 columns on tablets */
+    .grid-cols-4 {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    
+    .product-card {
+        padding: 0.6rem !important;
+    }
+    
+    .product-card img {
+        max-height: 140px !important;
+    }
+    
+    .product-card h2,
+    .product-card h3 {
+        font-size: 1rem !important;
+    }
+}
+
+/* ========================================
+   DESKTOP - NO CHANGES
+======================================== */
+
+@media (min-width: 769px) {
+    /* Everything stays original size on desktop */
+    /* This section intentionally left empty */
+}
+
+/* ========================================
+   TOUCH OPTIMIZATION
+======================================== */
+
+@media (max-width: 768px) {
+    /* Ensure buttons are still touch-friendly */
+    .product-card button,
+    .product-card a.btn {
+        min-height: 36px !important;
+        min-width: 36px !important;
+    }
+    
+    /* Add some spacing between buttons */
+    .product-card .btn + .btn,
+    .product-card button + button {
+        margin-left: 0.25rem !important;
+    }
+}
+
+/* ========================================
+   PREVENT TEXT OVERFLOW
+======================================== */
+
+@media (max-width: 768px) {
+    .product-card * {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    /* Product name should not overflow */
+    .product-card h2,
+    .product-card h3 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Show max 2 lines */
+        -webkit-box-orient: vertical;
+    }
+    
+    /* Description should be limited */
+    .product-card p {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Show max 2 lines */
+        -webkit-box-orient: vertical;
+    }
+}
+

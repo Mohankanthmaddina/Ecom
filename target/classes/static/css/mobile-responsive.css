@@ -1,0 +1,542 @@
+/**
+ * Mobile Responsive Optimization
+ * Reduces sizes by 25% on mobile devices for better fit
+ * Optimized for phones and tablets
+ */
+
+/* ========================================
+   MOBILE DEVICES (PHONE)
+   Reduce all sizes by 25%
+======================================== */
+
+@media (max-width: 768px) {
+    
+    /* Base Font Size Reduction */
+    html {
+        font-size: 12px !important; /* Reduced from 16px (25% reduction) */
+    }
+    
+    body {
+        font-size: 0.75rem !important; /* 75% of original */
+    }
+    
+    /* ========================================
+       TYPOGRAPHY
+    ======================================== */
+    
+    h1 {
+        font-size: 1.5rem !important; /* Reduced from 2rem */
+        margin-bottom: 0.75rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    h2 {
+        font-size: 1.3rem !important; /* Reduced from 1.75rem */
+        margin-bottom: 0.6rem !important;
+    }
+    
+    h3 {
+        font-size: 1.1rem !important; /* Reduced from 1.5rem */
+        margin-bottom: 0.5rem !important;
+    }
+    
+    h4 {
+        font-size: 1rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+    
+    h5, h6 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    p {
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+        margin-bottom: 0.6rem !important;
+    }
+    
+    /* ========================================
+       SPACING & PADDING
+    ======================================== */
+    
+    /* Padding Reduction */
+    .p-1 { padding: 0.1875rem !important; } /* 25% reduction */
+    .p-2 { padding: 0.375rem !important; }
+    .p-3 { padding: 0.5625rem !important; }
+    .p-4 { padding: 0.75rem !important; }
+    .p-5 { padding: 0.9375rem !important; }
+    .p-6 { padding: 1.125rem !important; }
+    .p-8 { padding: 1.5rem !important; }
+    .p-10 { padding: 1.875rem !important; }
+    .p-12 { padding: 2.25rem !important; }
+    
+    /* Margin Reduction */
+    .m-1 { margin: 0.1875rem !important; }
+    .m-2 { margin: 0.375rem !important; }
+    .m-3 { margin: 0.5625rem !important; }
+    .m-4 { margin: 0.75rem !important; }
+    .m-5 { margin: 0.9375rem !important; }
+    .m-6 { margin: 1.125rem !important; }
+    .m-8 { margin: 1.5rem !important; }
+    .m-10 { margin: 1.875rem !important; }
+    .m-12 { margin: 2.25rem !important; }
+    
+    /* Vertical Spacing */
+    .my-4 { margin-top: 0.75rem !important; margin-bottom: 0.75rem !important; }
+    .my-6 { margin-top: 1.125rem !important; margin-bottom: 1.125rem !important; }
+    .my-8 { margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; }
+    .my-12 { margin-top: 2.25rem !important; margin-bottom: 2.25rem !important; }
+    
+    /* ========================================
+       BUTTONS
+    ======================================== */
+    
+    button, .btn, .modal-btn, 
+    input[type="submit"], 
+    input[type="button"] {
+        font-size: 0.85rem !important;
+        padding: 0.6rem 1.2rem !important;
+        min-height: 2.25rem !important; /* Touch-friendly but smaller */
+    }
+    
+    .btn-sm {
+        font-size: 0.7rem !important;
+        padding: 0.4rem 0.8rem !important;
+    }
+    
+    .btn-lg {
+        font-size: 1rem !important;
+        padding: 0.75rem 1.5rem !important;
+    }
+    
+    /* Icon Buttons */
+    button i, .btn i {
+        font-size: 0.85rem !important;
+        margin-right: 0.3rem !important;
+    }
+    
+    /* ========================================
+       FORMS & INPUTS
+    ======================================== */
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="number"],
+    select,
+    textarea {
+        font-size: 0.85rem !important;
+        padding: 0.6rem 0.75rem !important;
+        height: auto !important;
+        min-height: 2.5rem !important; /* Touch-friendly */
+    }
+    
+    label {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    /* ========================================
+       CARDS & CONTAINERS
+    ======================================== */
+    
+    .card, .product-card, .modal-content {
+        padding: 0.75rem !important;
+        border-radius: 0.75rem !important; /* 25% smaller */
+    }
+    
+    .card-header, .modal-header {
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .card-body, .modal-body {
+        padding: 0.75rem !important;
+    }
+    
+    .card-footer, .modal-footer {
+        padding: 0.6rem 0.75rem !important;
+    }
+    
+    /* ========================================
+       NAVIGATION & HEADER
+    ======================================== */
+    
+    nav, .navbar {
+        padding: 0.6rem 0.75rem !important;
+    }
+    
+    .navbar-brand {
+        font-size: 1.2rem !important;
+    }
+    
+    nav a, .nav-link {
+        font-size: 0.85rem !important;
+        padding: 0.4rem 0.6rem !important;
+    }
+    
+    /* Logo/Icon sizes */
+    .w-10 { width: 1.875rem !important; } /* 25% reduction */
+    .h-10 { height: 1.875rem !important; }
+    .w-12 { width: 2.25rem !important; }
+    .h-12 { height: 2.25rem !important; }
+    
+    /* ========================================
+       MODALS
+    ======================================== */
+    
+    .modal-content {
+        max-width: 95% !important;
+        margin: 0.75rem auto !important;
+    }
+    
+    .modal-icon {
+        font-size: 2.5rem !important; /* Reduced from ~3.5rem */
+    }
+    
+    .modal-title {
+        font-size: 1.3rem !important;
+    }
+    
+    .modal-message {
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* ========================================
+       TABLES
+    ======================================== */
+    
+    table {
+        font-size: 0.75rem !important;
+    }
+    
+    th, td {
+        padding: 0.45rem 0.6rem !important;
+    }
+    
+    thead th {
+        font-size: 0.8rem !important;
+    }
+    
+    /* ========================================
+       IMAGES & MEDIA
+    ======================================== */
+    
+    img {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    .product-image,
+    .card img {
+        max-height: 150px !important; /* Reduced from 200px */
+    }
+    
+    /* ========================================
+       GRID LAYOUTS
+    ======================================== */
+    
+    .grid {
+        gap: 0.75rem !important; /* Reduced from 1rem */
+    }
+    
+    .grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.6rem !important;
+    }
+    
+    .grid-cols-3 {
+        grid-template-columns: repeat(2, 1fr) !important; /* Force 2 columns on mobile */
+        gap: 0.5rem !important;
+    }
+    
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+    
+    /* ========================================
+       SPECIFIC COMPONENTS
+    ======================================== */
+    
+    /* Product Cards */
+    .product-card {
+        padding: 0.6rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .product-card h2,
+    .product-card .text-2xl {
+        font-size: 1.1rem !important;
+    }
+    
+    .product-card .text-xl {
+        font-size: 1rem !important;
+    }
+    
+    /* Prices */
+    .price,
+    .text-3xl {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Badges */
+    .badge, .cart-badge {
+        font-size: 0.65rem !important;
+        padding: 0.15rem 0.4rem !important;
+        min-width: 1.2rem !important;
+        height: 1.2rem !important;
+    }
+    
+    /* Icons */
+    .fas, .far, .fab {
+        font-size: 0.9rem !important;
+    }
+    
+    .text-xl i {
+        font-size: 1rem !important;
+    }
+    
+    .text-2xl i {
+        font-size: 1.2rem !important;
+    }
+    
+    /* ========================================
+       DASHBOARD & ADMIN
+    ======================================== */
+    
+    .dashboard-card {
+        padding: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .stats-card {
+        padding: 0.6rem !important;
+    }
+    
+    .stat-value {
+        font-size: 1.3rem !important;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem !important;
+    }
+    
+    /* ========================================
+       CHECKOUT & CART
+    ======================================== */
+    
+    .cart-item {
+        padding: 0.6rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .cart-item-image {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .order-summary {
+        padding: 0.75rem !important;
+    }
+    
+    .order-item {
+        padding: 0.45rem 0 !important;
+        font-size: 0.8rem !important;
+    }
+    
+    /* ========================================
+       UTILITIES
+    ======================================== */
+    
+    /* Border Radius */
+    .rounded { border-radius: 0.1875rem !important; }
+    .rounded-md { border-radius: 0.28125rem !important; }
+    .rounded-lg { border-radius: 0.375rem !important; }
+    .rounded-xl { border-radius: 0.5625rem !important; }
+    .rounded-2xl { border-radius: 0.75rem !important; }
+    .rounded-3xl { border-radius: 1.125rem !important; }
+    
+    /* Shadows - Slightly reduced */
+    .shadow {
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    .shadow-md {
+        box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .shadow-lg {
+        box-shadow: 0 7.5px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Max Width Containers */
+    .max-w-7xl,
+    .max-w-6xl,
+    .max-w-5xl {
+        max-width: 100% !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+    
+    .container {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+}
+
+/* ========================================
+   SMALL MOBILE DEVICES (< 480px)
+   Additional 10% reduction for very small screens
+======================================== */
+
+@media (max-width: 480px) {
+    
+    html {
+        font-size: 11px !important; /* Further reduction */
+    }
+    
+    h1 {
+        font-size: 1.3rem !important;
+    }
+    
+    h2 {
+        font-size: 1.1rem !important;
+    }
+    
+    h3 {
+        font-size: 1rem !important;
+    }
+    
+    button, .btn {
+        font-size: 0.8rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    .modal-content {
+        max-width: 98% !important;
+        margin: 0.5rem auto !important;
+    }
+    
+    .product-card,
+    .card {
+        padding: 0.5rem !important;
+    }
+    
+    /* Force single column on very small screens */
+    .grid-cols-2,
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ========================================
+   TABLET DEVICES (481px - 768px)
+   Slight reduction (15% instead of 25%)
+======================================== */
+
+@media (min-width: 481px) and (max-width: 768px) {
+    
+    html {
+        font-size: 13.6px !important; /* 15% reduction from 16px */
+    }
+    
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .container,
+    .max-w-7xl {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}
+
+/* ========================================
+   LANDSCAPE MODE OPTIMIZATION
+======================================== */
+
+@media (max-height: 500px) and (orientation: landscape) {
+    
+    .modal-content {
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+    
+    nav {
+        padding: 0.4rem 0.75rem !important;
+    }
+    
+    .modal-header {
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .modal-icon {
+        font-size: 2rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+}
+
+/* ========================================
+   TOUCH TARGETS
+   Ensure buttons remain touch-friendly
+======================================== */
+
+@media (max-width: 768px) {
+    
+    button,
+    .btn,
+    a.btn,
+    input[type="submit"],
+    input[type="button"],
+    select,
+    .clickable {
+        min-height: 44px !important; /* Apple's recommended minimum */
+        min-width: 44px !important;
+    }
+    
+    /* Increase tap area for icons */
+    .icon-button {
+        padding: 0.6rem !important;
+    }
+}
+
+/* ========================================
+   PREVENT TEXT OVERFLOW
+======================================== */
+
+@media (max-width: 768px) {
+    
+    * {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    .text-nowrap {
+        white-space: normal !important;
+    }
+}
+
+/* ========================================
+   PRINT OPTIMIZATION
+======================================== */
+
+@media print {
+    
+    html {
+        font-size: 12pt !important;
+    }
+    
+    .no-print,
+    nav,
+    .modal,
+    button,
+    .btn {
+        display: none !important;
+    }
+}
+
