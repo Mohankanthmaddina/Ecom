@@ -1,94 +1,108 @@
-# This workflow will build and push a new container image to Amazon ECR,
-# and then will deploy a new task definition to Amazon ECS, when there is a push to the "backend" branch.
-#
-# To use this workflow, you will need to complete the following set-up steps:
-#
-# 1. Create an ECR repository to store your images.
-#    For example: `aws ecr create-repository --repository-name my-ecr-repo --region us-east-2`.
-#    Replace the value of the `ECR_REPOSITORY` environment variable in the workflow below with your repository's name.
-#    Replace the value of the `AWS_REGION` environment variable in the workflow below with your repository's region.
-#
-# 2. Create an ECS task definition, an ECS cluster, and an ECS service.
-#    For example, follow the Getting Started guide on the ECS console:
-#      https://us-east-2.console.aws.amazon.com/ecs/home?region=us-east-2#/firstRun
-#    Replace the value of the `ECS_SERVICE` environment variable in the workflow below with the name you set for the Amazon ECS service.
-#    Replace the value of the `ECS_CLUSTER` environment variable in the workflow below with the name you set for the cluster.
-#
-# 3. Store your ECS task definition as a JSON file in your repository.
-#    The format should follow the output of `aws ecs register-task-definition --generate-cli-skeleton`.
-#    Replace the value of the `ECS_TASK_DEFINITION` environment variable in the workflow below with the path to the JSON file.
-#    Replace the value of the `CONTAINER_NAME` environment variable in the workflow below with the name of the container
-#    in the `containerDefinitions` section of the task definition.
-#
-# 4. Store an IAM user access key in GitHub Actions secrets named `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
-#    See the documentation for each action used below for the recommended IAM policies for this IAM user,
-#    and best practices on handling the access key credentials.
-
-name: Deploy to Amazon ECS
+name: Deploy Spring Boot Backend (Docker)
 
 on:
   push:
-    branches: [ "backend" ]
-
-env:
-  AWS_REGION: MY_AWS_REGION                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: MY_ECR_REPOSITORY           # set this to your Amazon ECR repository name
-  ECS_SERVICE: MY_ECS_SERVICE                 # set this to your Amazon ECS service name
-  ECS_CLUSTER: MY_ECS_CLUSTER                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: MY_ECS_TASK_DEFINITION # set this to the path to your Amazon ECS task definition
-                                               # file, e.g. .aws/task-definition.json
-  CONTAINER_NAME: MY_CONTAINER_NAME           # set this to the name of the container in the
-                                               # containerDefinitions section of your task definition
-
-permissions:
-  contents: read
+    branches:
+      - master
+      - main
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'Dockerfile'
 
 jobs:
-  deploy:
-    name: Deploy
+  deploy-backend:
     runs-on: ubuntu-latest
-    environment: production
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+      - name: Setup Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        # Build a docker container and
-        # push it to ECR so that it can
-        # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      - name: Build JAR
+        run: mvn clean package -DskipTests
 
-    - name: Fill in the new image ID in the Amazon ECS task definition
-      id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: ${{ env.ECS_TASK_DEFINITION }}
-        container-name: ${{ env.CONTAINER_NAME }}
-        image: ${{ steps.build-image.outputs.image }}
+      - name: Rename JAR
+        run: find target -name "*.jar" -not -name "*.original" | head -1 | xargs -I {} mv {} target/ecom.jar
 
-    - name: Deploy Amazon ECS task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: ${{ env.ECS_SERVICE }}
-        cluster: ${{ env.ECS_CLUSTER }}
-        wait-for-service-stability: true
+      - name: Copy Build Artifacts to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "target/ecom.jar,Dockerfile"
+          target: "/home/ec2-user/backend/"
+          strip_components: 0
+
+      - name: Build and Run Backend Container
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DB_URL,DB_USERNAME,JWT_SECRET,DB_PASSWORD,RAZORPAY_KEY,RAZORPAY_SECRET,MAIL_HOST,MAIL_PORT,MAIL_USERNAME,MAIL_PASSWORD,GEMINI_API_KEY,API_DOCS_PATH,SWAGGER_UI_PATH,SWAGGER_TAG_SORTER,SWAGGER_OPERATION_SORTER,MAPBOX_ACCESS_TOKEN
+          script: |
+            cd /home/ec2-user/backend/
+            
+            # Stop and remove existing container if present
+            docker stop ecom-backend || true
+            docker rm ecom-backend || true
+
+            # Build fresh image
+            docker build -t ecom-backend:latest .
+
+            # Run new container connected to host network or custom bridge
+            docker run -d \
+              --name ecom-backend \
+              --restart always \
+              -p 8080:8080 \
+              -e DB_URL="${DB_URL}" \
+              -e DB_USERNAME="${DB_USERNAME}" \
+              -e DB_PASSWORD="${DB_PASSWORD}" \
+              -e RAZORPAY_KEY="${RAZORPAY_KEY}" \
+              -e RAZORPAY_SECRET="${RAZORPAY_SECRET}" \
+              -e MAIL_HOST="${MAIL_HOST}" \
+              -e MAIL_PORT="${MAIL_PORT}" \
+              -e MAIL_USERNAME="${MAIL_USERNAME}" \
+              -e MAIL_PASSWORD="${MAIL_PASSWORD}" \
+              -e GEMINI_API_KEY="${GEMINI_API_KEY}" \
+              -e API_DOCS_PATH="${API_DOCS_PATH}" \
+              -e SWAGGER_UI_PATH="${SWAGGER_UI_PATH}" \
+              -e SWAGGER_TAG_SORTER="${SWAGGER_TAG_SORTER}" \
+              -e SWAGGER_OPERATION_SORTER="${SWAGGER_OPERATION_SORTER}" \
+              -e MAPBOX_ACCESS_TOKEN="${MAPBOX_ACCESS_TOKEN}" \
+              -e JWT_SECRET="${JWT_SECRET}" \
+              ecom-backend:latest
+
+            echo "===== Backend Container Status ====="
+            docker ps -f name=ecom-backend
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          RAZORPAY_KEY: ${{ secrets.RAZORPAY_KEY }}
+          RAZORPAY_SECRET: ${{ secrets.RAZORPAY_SECRET }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          API_DOCS_PATH: ${{ secrets.API_DOCS_PATH }}
+          SWAGGER_UI_PATH: ${{ secrets.SWAGGER_UI_PATH }}
+          SWAGGER_TAG_SORTER: ${{ secrets.SWAGGER_TAG_SORTER }}
+          SWAGGER_OPERATION_SORTER: ${{ secrets.SWAGGER_OPERATION_SORTER }}
+          MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
