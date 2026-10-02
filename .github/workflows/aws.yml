@@ -3,9 +3,7 @@ name: Deploy Fullstack to EC2
 on:
   push:
     branches:
-      - master
-      - main
-
+      - backend
 jobs:
   # ─────────────────────────────────────────────
   # JOB 1: Build and Deploy Spring Boot Backend
