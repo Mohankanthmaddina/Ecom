@@ -1,16 +1,15 @@
-name: Deploy Spring Boot Backend (Docker)
+name: Deploy Fullstack to EC2
 
 on:
   push:
     branches:
       - master
       - main
-    paths:
-      - 'src/**'
-      - 'pom.xml'
-      - 'Dockerfile'
 
 jobs:
+  # ─────────────────────────────────────────────
+  # JOB 1: Build and Deploy Spring Boot Backend
+  # ─────────────────────────────────────────────
   deploy-backend:
     runs-on: ubuntu-latest
     steps:
@@ -37,17 +36,17 @@ jobs:
       - name: Rename JAR
         run: find target -name "*.jar" -not -name "*.original" | head -1 | xargs -I {} mv {} target/ecom.jar
 
-      - name: Copy Build Artifacts to EC2
+      - name: Copy JAR to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "target/ecom.jar,Dockerfile"
-          target: "/home/ec2-user/backend/"
-          strip_components: 0
+          source: "target/ecom.jar"
+          target: "/home/ec2-user/"
+          strip_components: 1
 
-      - name: Build and Run Backend Container
+      - name: Restart Spring Boot on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -55,40 +54,47 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: DB_URL,DB_USERNAME,JWT_SECRET,DB_PASSWORD,RAZORPAY_KEY,RAZORPAY_SECRET,MAIL_HOST,MAIL_PORT,MAIL_USERNAME,MAIL_PASSWORD,GEMINI_API_KEY,API_DOCS_PATH,SWAGGER_UI_PATH,SWAGGER_TAG_SORTER,SWAGGER_OPERATION_SORTER,MAPBOX_ACCESS_TOKEN
           script: |
-            cd /home/ec2-user/backend/
-            
-            # Stop and remove existing container if present
-            docker stop ecom-backend || true
-            docker rm ecom-backend || true
+            sudo rm -rf /etc/systemd/system/ecom.service.d
+            cat > /tmp/ecom.service << SERVICE
+            [Unit]
+            Description=Ecom Spring Boot App
+            After=network.target
 
-            # Build fresh image
-            docker build -t ecom-backend:latest .
+            [Service]
+            User=ec2-user
+            WorkingDirectory=/home/ec2-user
+            Environment="DB_URL=${DB_URL}"
+            Environment="DB_USERNAME=${DB_USERNAME}"
+            Environment="DB_PASSWORD=${DB_PASSWORD}"
+            Environment="RAZORPAY_KEY=${RAZORPAY_KEY}"
+            Environment="RAZORPAY_SECRET=${RAZORPAY_SECRET}"
+            Environment="MAIL_HOST=${MAIL_HOST}"
+            Environment="MAIL_PORT=${MAIL_PORT}"
+            Environment="MAIL_USERNAME=${MAIL_USERNAME}"
+            Environment="MAIL_PASSWORD=${MAIL_PASSWORD}"
+            Environment="GEMINI_API_KEY=${GEMINI_API_KEY}"
+            Environment="API_DOCS_PATH=${API_DOCS_PATH}"
+            Environment="SWAGGER_UI_PATH=${SWAGGER_UI_PATH}"
+            Environment="SWAGGER_TAG_SORTER=${SWAGGER_TAG_SORTER}"
+            Environment="SWAGGER_OPERATION_SORTER=${SWAGGER_OPERATION_SORTER}"
+            Environment="MAPBOX_ACCESS_TOKEN=${MAPBOX_ACCESS_TOKEN}"
+            Environment="JWT_SECRET=${JWT_SECRET}"
+            ExecStart=/usr/bin/java -jar /home/ec2-user/ecom.jar
+            SuccessExitStatus=143
+            Restart=always
+            RestartSec=10
 
-            # Run new container connected to host network or custom bridge
-            docker run -d \
-              --name ecom-backend \
-              --restart always \
-              -p 8080:8080 \
-              -e DB_URL="${DB_URL}" \
-              -e DB_USERNAME="${DB_USERNAME}" \
-              -e DB_PASSWORD="${DB_PASSWORD}" \
-              -e RAZORPAY_KEY="${RAZORPAY_KEY}" \
-              -e RAZORPAY_SECRET="${RAZORPAY_SECRET}" \
-              -e MAIL_HOST="${MAIL_HOST}" \
-              -e MAIL_PORT="${MAIL_PORT}" \
-              -e MAIL_USERNAME="${MAIL_USERNAME}" \
-              -e MAIL_PASSWORD="${MAIL_PASSWORD}" \
-              -e GEMINI_API_KEY="${GEMINI_API_KEY}" \
-              -e API_DOCS_PATH="${API_DOCS_PATH}" \
-              -e SWAGGER_UI_PATH="${SWAGGER_UI_PATH}" \
-              -e SWAGGER_TAG_SORTER="${SWAGGER_TAG_SORTER}" \
-              -e SWAGGER_OPERATION_SORTER="${SWAGGER_OPERATION_SORTER}" \
-              -e MAPBOX_ACCESS_TOKEN="${MAPBOX_ACCESS_TOKEN}" \
-              -e JWT_SECRET="${JWT_SECRET}" \
-              ecom-backend:latest
+            [Install]
+            WantedBy=multi-user.target
+            SERVICE
 
-            echo "===== Backend Container Status ====="
-            docker ps -f name=ecom-backend
+            sudo mv /tmp/ecom.service /etc/systemd/system/ecom.service
+            sudo systemctl daemon-reload
+            sudo systemctl enable ecom
+            sudo systemctl restart ecom
+            sleep 5
+            echo "===== Spring Boot Status ====="
+            sudo systemctl status ecom --no-pager
         env:
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
