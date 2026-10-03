@@ -108,7 +108,9 @@ public class SecurityConfig {
                                 "http://buildersmartenterprices.in",
                                 "https://buildersmartenterprices.in",
                                 "http://www.buildersmartenterprices.in",
-                                "https://www.buildersmartenterprices.in"
+                                "https://www.buildersmartenterprices.in",
+                                "http://54.160.222.125",
+                                "https://54.160.222.125"
                 ));
                 configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(Arrays.asList("*"));
