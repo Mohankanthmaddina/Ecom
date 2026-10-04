@@ -4,11 +4,11 @@ import AdminLayout from './AdminLayout';
 
 function CategoryImage({ cat }) {
     const [imgFailed, setImgFailed] = useState(false);
-    
+
     const fallbackEmoji = cat.name.toLowerCase().includes('electronics') ? '📱' :
         cat.name.toLowerCase().includes('tiles') ? '🏬' :
-        cat.name.toLowerCase().includes('iron') ? '⚡' :
-        cat.name.toLowerCase().includes('hardware') ? '🛠️' : '📦';
+            cat.name.toLowerCase().includes('iron') ? '⚡' :
+                cat.name.toLowerCase().includes('hardware') ? '🛠️' : '📦';
 
     if (!cat.imageUrl || imgFailed) {
         return <span className="text-5xl select-none">{fallbackEmoji}</span>;
@@ -54,9 +54,11 @@ function AdminCategoryList() {
         e.preventDefault();
         try {
             if (editingCategory) {
-                await axios.put(`/api/admin/categories/${editingCategory.id}`, formData);
+                alert("inside edit category block");
+                await axios.put(`/admin/categories/${editingCategory.id}`, formData);
             } else {
-                await axios.post('/api/admin/categories', formData);
+                alert("inside add category block");
+                await axios.post('/admin/categories', formData);
             }
             setShowModal(false);
             fetchCategories();
@@ -178,7 +180,7 @@ function AdminCategoryList() {
                                         <p className="text-gray-450 text-xs mt-2 italic leading-relaxed line-clamp-2">{cat.description || 'General industrial material category.'}</p>
                                     </div>
                                 </div>
-                                
+
                                 <div className="px-6 pb-6">
                                     <div className="flex gap-3 pt-4 border-t border-slate-50 relative z-10">
                                         <button

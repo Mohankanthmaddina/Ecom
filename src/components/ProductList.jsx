@@ -75,19 +75,21 @@ function ProductList() {
             } else {
                 // Main Feed -> Analytics Recommendation Feed
                 try {
-                    const feedRes = await axios.get(`/api/analytics/feed${userQueryStr}`);
-                    if (feedRes.data && Array.isArray(feedRes.data.products)) {
-                        setProducts(feedRes.data.products);
-                        setAnalyticsMeta({
-                            isNewUser: feedRes.data.isNewUser,
-                            feedType: feedRes.data.feedType,
-                            preferredCategory: feedRes.data.preferredCategory,
-                            trendingProducts: feedRes.data.trendingProducts || []
-                        });
-                    } else {
-                        const fallbackProd = await axios.get('/products');
-                        setProducts(fallbackProd.data || []);
-                    }
+                    // const feedRes = await axios.get(`/api/analytics/feed${userQueryStr}`);
+                    // if (feedRes.data && Array.isArray(feedRes.data.products)) {
+                    //     setProducts(feedRes.data.products);
+                    //     setAnalyticsMeta({
+                    //         isNewUser: feedRes.data.isNewUser,
+                    //         feedType: feedRes.data.feedType,
+                    //         preferredCategory: feedRes.data.preferredCategory,
+                    //         trendingProducts: feedRes.data.trendingProducts || []
+                    //     });
+                    // } else {
+                    //     const fallbackProd = await axios.get('/products');
+                    //     setProducts(fallbackProd.data || []);
+                    // }
+                    const fallbackProd = await axios.get('/products');
+                    setProducts(fallbackProd.data || []);
                 } catch (feedErr) {
                     const fallbackProd = await axios.get('/products');
                     setProducts(fallbackProd.data || []);
@@ -172,7 +174,7 @@ function ProductList() {
                     {/* Sidebar / Filters */}
                     <aside className="w-full md:w-64 shrink-0">
                         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-24 max-h-[calc(100vh-120px)] overflow-y-auto space-y-6">
-                            
+
                             {/* Search & Sort Section */}
                             <div>
                                 <h3 className="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
