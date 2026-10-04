@@ -6,9 +6,9 @@ function CategoryImage({ cat }) {
     const [imgFailed, setImgFailed] = useState(false);
 
     const fallbackEmoji = cat.name.toLowerCase().includes('electronics') ? '📱' :
-        cat.name.toLowerCase().includes('tiles') ? '🏬' :
-            cat.name.toLowerCase().includes('iron') ? '⚡' :
-                cat.name.toLowerCase().includes('hardware') ? '🛠️' : '📦';
+    cat.name.toLowerCase().includes('tiles') ? '🏬' :
+    cat.name.toLowerCase().includes('iron') ? '⚡' :
+    cat.name.toLowerCase().includes('hardware') ? '🛠️' : '📦';
 
     if (!cat.imageUrl || imgFailed) {
         return <span className="text-5xl select-none">{fallbackEmoji}</span>;
