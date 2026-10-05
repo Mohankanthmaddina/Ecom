@@ -21,9 +21,10 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "Model/*"
+          source: "Model/**"
           target: "/home/ec2-user/Model"
           strip_components: 1
+          overwrite: true
 
       - name: Setup Analytics Systemd Service on EC2
         uses: appleboy/ssh-action@v1.0.0
@@ -35,7 +36,7 @@ jobs:
           script: |
             set -e
 
-            # 1. Install Java JDK and Python system packages
+            # 1. Install Java JDK and Python system packages required for PySpark
             if command -v apt-get &> /dev/null; then
               sudo apt-get update -y
               sudo apt-get install -y openjdk-11-jre-headless python3-pip python3-dotenv
@@ -44,14 +45,14 @@ jobs:
               sudo yum install -y java-11-amazon-corretto-headless python3-pip
             fi
 
-            # 2. Upgrade pip and install PySpark dependencies
+            # 2. Upgrade pip and install PySpark dependencies from requirements.txt
             pip3 install --upgrade pip
             pip3 install -r /home/ec2-user/Model/requirements.txt || pip3 install -r /home/ec2-user/Model/requirements.txt --break-system-packages
 
             # 3. Detect Java Path dynamically
             JAVA_PATH=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
 
-            # 4. Generate systemd service configuration
+            # 4. Generate systemd service configuration with JAVA_HOME set
             cat > /tmp/analytics.service << SERVICE
             [Unit]
             Description=PySpark Analytics Scheduler Service
@@ -76,7 +77,7 @@ jobs:
             WantedBy=multi-user.target
             SERVICE
 
-            # 5. Load and start the analytics service
+            # 5. Move service file, reload daemon, and restart the analytics service
             sudo mv /tmp/analytics.service /etc/systemd/system/analytics.service
             sudo systemctl daemon-reload
             sudo systemctl enable analytics
