@@ -1,0 +1,72 @@
+name: Deploy Fullstack to EC2
+
+on:
+  push:
+    branches:
+      - model
+jobs:
+  # ─────────────────────────────────────────────
+  # JOB 3: Deploy PySpark Analytics Subsystem
+  # ─────────────────────────────────────────────
+  deploy-analytics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Copy Model directory to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "Model/"
+          target: "/home/ec2-user/"
+
+      - name: Setup Analytics Systemd Service on EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DB_HOST,DB_PORT,DB_NAME,ANALYTICS_DB_NAME,DB_USERNAME,DB_PASSWORD
+          script: |
+            sudo apt-get update && sudo apt-get install -y python3-pip python3-dotenv || sudo yum install -y python3-pip
+            pip3 install -r /home/ec2-user/Model/requirements.txt || true
+
+            cat > /tmp/analytics.service << SERVICE
+            [Unit]
+            Description=PySpark Analytics Scheduler Service
+            After=network.target ecom.service
+
+            [Service]
+            User=ec2-user
+            WorkingDirectory=/home/ec2-user/Model
+            Environment="DB_HOST=${DB_HOST}"
+            Environment="DB_PORT=${DB_PORT}"
+            Environment="DB_NAME=${DB_NAME}"
+            Environment="ANALYTICS_DB_NAME=${ANALYTICS_DB_NAME}"
+            Environment="DB_USERNAME=${DB_USERNAME}"
+            Environment="DB_PASSWORD=${DB_PASSWORD}"
+            ExecStart=/usr/bin/python3 /home/ec2-user/Model/scheduler.py
+            Restart=always
+            RestartSec=15
+
+            [Install]
+            WantedBy=multi-user.target
+            SERVICE
+
+            sudo mv /tmp/analytics.service /etc/systemd/system/analytics.service
+            sudo systemctl daemon-reload
+            sudo systemctl enable analytics
+            sudo systemctl restart analytics
+            sleep 5
+            echo "===== Analytics Service Status ====="
+            sudo systemctl status analytics --no-pager
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          ANALYTICS_DB_NAME: ${{ secrets.ANALYTICS_DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
