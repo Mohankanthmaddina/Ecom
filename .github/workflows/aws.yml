@@ -21,9 +21,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "Model/**"
-          target: "/home/ec2-user/Model"
-          strip_components: 1
+          source: "Model"
+          target: "/home/ec2-user"
           overwrite: true
 
       - name: Setup Analytics Systemd Service on EC2
