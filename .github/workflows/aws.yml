@@ -15,14 +15,51 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Debug - show repo contents
+        run: |
+          pwd
+          ls -la
+          echo "----- tracked files (first 30) -----"
+          git ls-files | head -30
+
+      - name: Prepare Model directory
+        run: |
+          set -e
+          rm -rf deploy_stage
+          mkdir -p deploy_stage
+
+          if [ -d "Model" ]; then
+            echo "Found folder: Model"
+            cp -a Model/. deploy_stage/
+          elif [ -d "model" ]; then
+            echo "Found folder: model (lowercase)"
+            cp -a model/. deploy_stage/
+          elif [ -f "scheduler.py" ]; then
+            echo "No Model folder; using repo root files"
+            rsync -a \
+              --exclude='.git' \
+              --exclude='.github' \
+              --exclude='deploy_stage' \
+              ./ deploy_stage/
+          else
+            echo "ERROR: Could not find Model/, model/, or scheduler.py at repo root"
+            exit 1
+          fi
+
+          echo "----- staged files -----"
+          ls -la deploy_stage
+          test -f deploy_stage/scheduler.py || { echo "ERROR: scheduler.py missing"; exit 1; }
+          test -f deploy_stage/requirements.txt || { echo "ERROR: requirements.txt missing"; exit 1; }
+
       - name: Copy Model directory to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "Model"
-          target: "/home/ec2-user"
+          source: "deploy_stage"
+          target: "/home/ec2-user/Model"
+          strip_components: 1
           overwrite: true
 
       - name: Setup Analytics Systemd Service on EC2
@@ -35,6 +72,9 @@ jobs:
           script: |
             set -e
 
+            echo "===== Files on server ====="
+            ls -la /home/ec2-user/Model
+
             # 1. Install Java JDK and Python system packages required for PySpark
             if command -v apt-get &> /dev/null; then
               sudo apt-get update -y
@@ -45,7 +85,7 @@ jobs:
             fi
 
             # 2. Upgrade pip and install PySpark dependencies from requirements.txt
-            pip3 install --upgrade pip
+            pip3 install --upgrade pip || pip3 install --upgrade pip --break-system-packages
             pip3 install -r /home/ec2-user/Model/requirements.txt || pip3 install -r /home/ec2-user/Model/requirements.txt --break-system-packages
 
             # 3. Detect Java Path dynamically
