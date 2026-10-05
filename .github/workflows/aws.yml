@@ -6,21 +6,11 @@ on:
       - model
 
 jobs:
-  # ─────────────────────────────────────────────
-  # JOB 3: Deploy PySpark Analytics Subsystem
-  # ─────────────────────────────────────────────
   deploy-analytics:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
-      - name: Debug - show repo contents
-        run: |
-          pwd
-          ls -la
-          echo "----- tracked files (first 30) -----"
-          git ls-files | head -30
 
       - name: Prepare Model directory
         run: |
@@ -46,17 +36,8 @@ jobs:
             exit 1
           fi
 
-          test -f deploy_stage/scheduler.py || { echo "ERROR: scheduler.py missing"; exit 1; }
-          test -f deploy_stage/requirements.txt || { echo "ERROR: requirements.txt missing"; exit 1; }
-
-          # Force PySpark 3.5.3 (works with Java 11, smaller download than 4.x)
-          sed -i -E 's/^pyspark.*/pyspark==3.5.3/I' deploy_stage/requirements.txt
-          grep -qi '^pyspark' deploy_stage/requirements.txt || echo "pyspark==3.5.3" >> deploy_stage/requirements.txt
-
           echo "----- staged files -----"
           ls -la deploy_stage
-          echo "----- requirements.txt -----"
-          cat deploy_stage/requirements.txt
 
       - name: Copy Model directory to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -68,89 +49,3 @@ jobs:
           target: "/home/ec2-user/Model"
           strip_components: 1
           overwrite: true
-
-      - name: Setup Analytics Systemd Service on EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          command_timeout: 30m
-          envs: DB_HOST,DB_PORT,DB_NAME,ANALYTICS_DB_NAME,DB_USERNAME,DB_PASSWORD
-          script: |
-            set -e
-
-            echo "===== Resources ====="
-            free -m
-            df -h /
-
-            echo "===== Files on server ====="
-            ls -la /home/ec2-user/Model
-
-            # 0. Add 2GB swap if none exists (helps small instances)
-            if [ "$(swapon --show | wc -l)" -eq 0 ]; then
-              echo "No swap found, creating 2GB swapfile"
-              sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
-              sudo chmod 600 /swapfile
-              sudo mkswap /swapfile
-              sudo swapon /swapfile
-            fi
-
-            # 1. Install Java and Python system packages required for PySpark
-            if command -v apt-get &> /dev/null; then
-              sudo apt-get update -y
-              sudo apt-get install -y openjdk-11-jre-headless python3-pip python3-dotenv
-            elif command -v yum &> /dev/null; then
-              sudo yum install -y java-11-amazon-corretto-headless python3-pip
-            fi
-
-            # 2. Install Python dependencies (no cache to save RAM and disk)
-            pip3 install --no-cache-dir --default-timeout=100 -r /home/ec2-user/Model/requirements.txt \
-              || pip3 install --no-cache-dir --default-timeout=100 --break-system-packages -r /home/ec2-user/Model/requirements.txt
-
-            # 3. Detect Java path dynamically
-            JAVA_PATH=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
-            echo "JAVA_HOME will be: ${JAVA_PATH}"
-
-            # 4. Generate systemd service configuration with JAVA_HOME set
-            cat > /tmp/analytics.service << SERVICE
-            [Unit]
-            Description=PySpark Analytics Scheduler Service
-            After=network.target
-
-            [Service]
-            User=ec2-user
-            WorkingDirectory=/home/ec2-user/Model
-            Environment="JAVA_HOME=${JAVA_PATH}"
-            Environment="PATH=${JAVA_PATH}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            Environment="DB_HOST=${DB_HOST}"
-            Environment="DB_PORT=${DB_PORT}"
-            Environment="DB_NAME=${DB_NAME}"
-            Environment="ANALYTICS_DB_NAME=${ANALYTICS_DB_NAME}"
-            Environment="DB_USERNAME=${DB_USERNAME}"
-            Environment="DB_PASSWORD=${DB_PASSWORD}"
-            ExecStart=/usr/bin/python3 /home/ec2-user/Model/scheduler.py
-            Restart=always
-            RestartSec=15
-
-            [Install]
-            WantedBy=multi-user.target
-            SERVICE
-
-            # 5. Move service file, reload daemon, and restart the analytics service
-            sudo mv /tmp/analytics.service /etc/systemd/system/analytics.service
-            sudo systemctl daemon-reload
-            sudo systemctl enable analytics
-            sudo systemctl restart analytics
-            sleep 5
-            echo "===== Analytics Service Status ====="
-            sudo systemctl status analytics --no-pager
-            echo "===== Recent logs ====="
-            sudo journalctl -u analytics -n 30 --no-pager
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          ANALYTICS_DB_NAME: ${{ secrets.ANALYTICS_DB_NAME }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
