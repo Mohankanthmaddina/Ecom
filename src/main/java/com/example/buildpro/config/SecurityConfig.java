@@ -104,7 +104,6 @@ public class SecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
                 configuration.setAllowedOrigins(java.util.List.of(
-                                "http://localhost:5173",
                                 "http://buildersmartenterprices.in",
                                 "https://buildersmartenterprices.in",
                                 "http://www.buildersmartenterprices.in",
