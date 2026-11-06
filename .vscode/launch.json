@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MegaMartApplication",
+            "request": "launch",
+            "mainClass": "com.example.buildpro.MegaMartApplication",
+            "projectName": "MegaMartApplication"
+        },
+        {
+            "type": "java",
             "name": "Debug MegaMartApplication",
             "request": "launch",
             "mainClass": "com.example.buildpro.MegaMartApplication",

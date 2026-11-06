@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.example.buildpro.service.IndianLocationServiceTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 3.070 s -- in com.example.buildpro.service.IndianLocationServiceTest
